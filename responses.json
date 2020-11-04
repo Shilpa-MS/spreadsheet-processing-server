@@ -1,0 +1,20 @@
+ {
+  "registrationSuccess": {
+    "code": 200,
+    "message": "Registration success"
+  },
+  "userExists": {
+    "code": 403,
+    "message": "User already exists"
+  },
+  "failed": {
+    "code": 500,
+    "message": "Failed to complete action"
+  },
+  "unauthorized": {
+    "code": 401,
+    "message": "Invalid credentials"
+  }
+}
+
+
