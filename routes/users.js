@@ -2,14 +2,15 @@ const express = require("express");
 const router = express.Router();
 const dbService = require("../services/dbService");
 const responses = require("../responses.json");
-const uuid = require("uuid");
 const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
 
 router.get("/", (req, res) => {
   res.status(200).send("Users route is running");
 });
 
-const DIR = "./spreadsheet-processing-server/uploads";
+const DIR = "./uploads";
+
 //store
 const store = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -17,12 +18,12 @@ const store = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const fileName = file.originalname.toLowerCase().split(" ").join("-");
-    cb(null, uuid() + "-" + fileName);
+    cb(null, uuidv4() + "-" + fileName);
   },
 });
 
 //initialise multer with disk storage
-let upload = multer({ storage: store }).single("file");
+let upload = multer({ storage: store }).single("csvFile");
 
 //create new user
 router.post("/register", async (req, res) => {
@@ -51,10 +52,10 @@ router.post("/authenticate", async (req, res) => {
 });
 
 //get role by Id
-router.post("/get-role", async (req, res) => {
+router.post("/get-user", async (req, res) => {
   const email = req.body.email;
   const result = await dbService.getUserRole(email);
-  console.log("Get Role Result is ::: ", result);
+  console.log("Get User Result is ::: ", result);
   if (result.statusCode === 200) {
     res.status(200).send(result);
   } else {
@@ -65,7 +66,12 @@ router.post("/get-role", async (req, res) => {
 //get all users
 router.post("/getAllUsers", async (req, res) => {
   const result = await dbService.getAllUsers();
-  console.log(result);
+  res.status(200).send(result);
+});
+
+//get pending users
+router.post("/getPendingUsers", async (req, res) => {
+  const result = await dbService.getPendingUsers();
   res.status(200).send(result);
 });
 
@@ -82,6 +88,14 @@ router.post("/upload", function (req, res, next) {
       });
     }
   });
+});
+
+//authorize user
+router.post("/authorize", async (req, res) => {
+  console.log("Req data is ...", req.body);
+  const result = await dbService.authorizeUser(req.body);
+  if (result === 200) res.status(200).send("Authorization success");
+  else res.status(200).send("Failed");
 });
 
 module.exports = router;
